@@ -18,12 +18,12 @@ class ServerNameExtension(TLSExtension):
         if len(hostnames) == 0:
             hostnames = [hostname]
 
-        name_list = ''
+        name_list = b''
         for hostname in hostnames:
             name = struct.pack('!BH%ds' % (len(hostname)),
                                name_type,
                                len(hostname),
-                               hostname)
+                               hostname.encode('utf-8'))
             name_list += name
 
 

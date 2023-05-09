@@ -134,6 +134,9 @@ def read_tls_record(f):
     if hdr == '':
         raise IOError('Unexpected EOF receiving record header - server closed connection')
 
+    if len(hdr) < 5:
+        raise IOError(f'Unexpected EOF receiving record header ({len(hdr)=} - server closed connection')
+
     typ, ver, ln = struct.unpack('>BHH', hdr)
     logger.debug('%d\t0x%x\t%d', typ, ver, ln)
 
