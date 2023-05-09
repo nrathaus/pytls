@@ -1,17 +1,15 @@
 #!/usr/bin/python
 
-from utils import *
-from starttls import *
-from ciphersuites import *
+from tls.utils import hexdump, h2bin
+from tls.starttls import *
+from tls.ciphersuites import *
 
-from record import *
-from handshake import *
-from alert import *
-from changecipherspec import *
-from application import *
+from tls.record import *
+from tls.handshake import *
+from tls.alert import *
+from tls.changecipherspec import *
 
-from ext_heartbeat import *
-from ext_statusrequest import *
-from ext_servername import *
+from tls.ext_heartbeat import *
+from tls.ext_statusrequest import *
+from tls.ext_servername import *
 
-from ssl2 import *

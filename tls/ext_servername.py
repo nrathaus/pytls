@@ -2,8 +2,8 @@
 
 import struct
 
-from handshake import *
-from utils import *
+from tls.handshake import *
+from tls.utils import *
 
 class ServerNameExtension(TLSExtension):
 

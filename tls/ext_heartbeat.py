@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from handshake import *
+from tls.handshake import *
 
 class HeartbeatMessage(object):
     
@@ -24,7 +24,8 @@ class HeartbeatMessage(object):
             length = len(payload)
 
         if padding is None:
-            padding = '*' * 16
+            padding = b'*' * 16
+            
         self.bytes = struct.pack('!BH%ds%ds' % (len(payload), len(padding)),
                                  message_type,
                                  length,
@@ -33,9 +34,9 @@ class HeartbeatMessage(object):
         return self
 
     @classmethod
-    def from_bytes(cls, bytes):
+    def from_bytes(cls, provided_bytes):
         self = cls()
-        self.bytes = bytes
+        self.bytes = provided_bytes
         return self
 
 

@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-import struct
-
 class AlertMessage(object):
     
     # Alert levels
@@ -86,23 +84,24 @@ class AlertMessage(object):
         self.bytes = ''
 
     @classmethod
-    def create(cls, level=Fatal, type=InternalError):
+    def from_bytes(cls, provided_bytes):
         self = cls()
-        self.bytes = struct.pack('!BB', level, type)
-
-        return self
-
-    @classmethod
-    def from_bytes(cls, bytes):
-        self = cls()
-        self.bytes = bytes
+        self.bytes = provided_bytes
         return self
 
     def alert_level(self):
-        return ord(self.bytes[0])
+        val = self.bytes[0]
+        if isinstance(val, bytes):
+            val = ord(val)
+            
+        return val
 
     def alert_type(self):
-        return ord(self.bytes[1])
+        val = self.bytes[1]
+        if isinstance(val, bytes):
+            val = ord(val)
+            
+        return val
 
     def __str__(self):
         return 'Alert: %s (%d), %s (%d)' \

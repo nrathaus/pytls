@@ -2,7 +2,7 @@
 
 import struct
 
-from handshake import *
+from tls.handshake import *
 
 class StatusRequestExtension(TLSExtension):
 

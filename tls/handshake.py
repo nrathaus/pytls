@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import struct
-from utils import *
+from tls.utils import *
 
 class HandshakeMessage(object):
 
@@ -38,7 +38,11 @@ class HandshakeMessage(object):
         self.bytes = ''
 
     def message_type(self):
-        return ord(self.bytes[0])
+        val = self.bytes[0]
+        if isinstance(val, bytes):
+            val = ord(val)
+            
+        return val
 
     def message_length(self):
         h,l = struct.unpack('!BH', self.bytes[1:4])
@@ -64,20 +68,23 @@ class HandshakeMessage(object):
         return self
 
     @classmethod
-    def from_bytes(cls, bytes):
-        if ord(bytes[0]) == HandshakeMessage.ClientHello:
+    def from_bytes(cls, provided_bytes):
+        val = provided_bytes[0]
+        if isinstance(val, bytes):
+            val = ord(val)
+        if val == HandshakeMessage.ClientHello:
             self = ClientHelloMessage()
-        elif ord(bytes[0]) == HandshakeMessage.CertificateStatus:
+        elif val == HandshakeMessage.CertificateStatus:
             self = CertificateStatusMessage()
-        elif ord(bytes[0]) == HandshakeMessage.ServerHello:
+        elif val == HandshakeMessage.ServerHello:
             self = ServerHelloMessage()
-        elif ord(bytes[0]) == HandshakeMessage.ServerKeyExchange:
+        elif val == HandshakeMessage.ServerKeyExchange:
             self = ServerKeyExchangeMessage()
-        elif ord(bytes[0]) == HandshakeMessage.Certificate:
+        elif val == HandshakeMessage.Certificate:
             self = CertificateMessage()
         else:
             self = cls()
-        self.bytes = bytes
+        self.bytes = provided_bytes
         return self
 
 
@@ -133,7 +140,7 @@ class ClientHelloMessage(HandshakeMessage):
             compression = struct.pack('BB', 1, 0)
             
         if extensions:
-            exts = ''
+            exts = b''
             for extension in extensions:
                 exts += extension.bytes
             ext = struct.pack('!H', len(exts))
@@ -143,7 +150,7 @@ class ClientHelloMessage(HandshakeMessage):
     
         message = struct.pack('!H32sB%ds%ds%ds' % (len(ciphers), len(compression), len(ext)),
                               client_version,
-                              random,
+                              random.encode('utf-8'),
                               0, # sessionid length,
                               ciphers,
                               compression,

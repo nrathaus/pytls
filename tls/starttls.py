@@ -1,15 +1,13 @@
 #!/usr/bin/python
 
 import logging
-import struct
 
 starttls_modes = {
     21: 'ftp',
     25: 'smtp',
     110: 'pop3',
     143: 'imap',
-    587: 'smtp',
-    38476: 'pgsql'
+    587: 'smtp'
 }
 
 def starttls(s, port, mode='auto'):
@@ -18,7 +16,7 @@ def starttls(s, port, mode='auto'):
     logger.debug('Using %d, mode %s', port, mode)
 
     if mode == 'auto':
-        if starttls_modes.has_key(port):
+        if port in starttls_modes:
             mode = starttls_modes[port]
         else:
             # No starttls
@@ -49,10 +47,6 @@ def starttls(s, port, mode='auto'):
     elif mode == 'ftp':
         s.recv(BUFSIZ)
         s.send("AUTH TLS\r\n")
-        s.recv(BUFSIZ)
-    elif mode == 'pgsql':
-        msg = struct.pack('BBBBBBBB', 0x00, 0x00, 0x00, 0x08, 0x04, 0xd2, 0x16, 0x2f)
-        s.send(msg)
         s.recv(BUFSIZ)
     else:
         raise Exception('Unknown starttls mode, %s' % mode)

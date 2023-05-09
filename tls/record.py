@@ -3,13 +3,8 @@
 import struct
 import logging
 
-from alert import *
-from handshake import *
-from changecipherspec import *
-from application import *
-from unknown import *
-
-from ext_heartbeat import *
+from tls.alert import *
+from tls.handshake import *
 
 class TLSRecord(object):
 
@@ -55,7 +50,11 @@ class TLSRecord(object):
         if length < 0:
             length = len(message)
 
-        self.bytes = struct.pack('!BHH%ds' % (length),
+        fmt = '!BHH%ds' % (length)
+        if isinstance(message, str):
+            message = message.encode('utf-8')
+            
+        self.bytes = struct.pack(fmt,
                                  content_type,
                                  version,
                                  length,
@@ -64,13 +63,16 @@ class TLSRecord(object):
         return self
      
     @classmethod
-    def from_bytes(cls, bytes):
+    def from_bytes(cls, provided_bytes):
         self = cls()
-        self.bytes = bytes
+        self.bytes = provided_bytes
         return self
 
     def content_type(self):
-        return ord(self.bytes[0])
+        val = self.bytes[0]
+        if isinstance(val, bytes):
+            val = ord(val)
+        return val
 
     def version(self):
         version, = struct.unpack('!H', self.bytes[1:3])
@@ -82,26 +84,6 @@ class TLSRecord(object):
 
     def message(self):
         return self.bytes[5:self.message_length()+5]
-
-    def messages(self):
-        '''
-        Convenience method that returns the messages wrapped in the right type. To
-        keep things consistent it always returns a list even though only handshake
-        records can contain multiple messages.
-        '''
-
-        if self.content_type() == self.Handshake:
-            return self.handshake_messages()
-        elif self.content_type() == self.ChangeCipherSpec:
-            return [ChangeCipherSpecMessage.from_bytes(self.message())]
-        elif self.content_type() == self.Alert:
-            return [AlertMessage.from_bytes(self.message())]
-        elif self.content_type() == self.Application:
-            return [ApplicationMessage.from_bytes(self.message())]
-        elif self.content_type() == self.Heartbeat:
-            return [HeartbeatMessage.from_bytes(self.message())]
-        else:
-            return [UnknownMessage.from_bytes(self.message())]
 
     def handshake_messages(self):
         if self.content_type() != self.Handshake:
@@ -144,8 +126,16 @@ def read_tls_record(f):
                  typ, TLSRecord.content_types.get(typ, 'UNKNOWN!'), ver, len(pay))
 
     if typ == TLSRecord.Handshake:
-        logger.debug('>>> Handshake message: %s', HandshakeMessage.message_types.get(ord(pay[0]), 'UNKNOWN!'))
+        message_type = pay[0]
+        if isinstance(message_type, bytes):
+            message_type = ord(message_type)
+            
+        logger.debug('>>> Handshake message: %s', HandshakeMessage.message_types.get(message_type, 'UNKNOWN!'))
     elif typ == TLSRecord.Alert:
-        logger.debug('>>> Alert message: %s', AlertMessage.alert_types.get(ord(pay[1]), 'UNKNOWN!'))
+        message_type = pay[1]
+        if isinstance(message_type, bytes):
+            message_type = ord(message_type)
+
+        logger.debug('>>> Alert message: %s', AlertMessage.alert_types.get(message_type, 'UNKNOWN!'))
 
     return TLSRecord.from_bytes(hdr+pay)

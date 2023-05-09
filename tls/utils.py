@@ -15,7 +15,7 @@ def to_hex(s):
     return h
 
 def hexdump(s):
-    print to_hex(s)
+    print (to_hex(s))
  
 class LoggedFile(object):
     def __init__(self, file_):
