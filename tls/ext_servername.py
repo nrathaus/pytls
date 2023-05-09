@@ -5,6 +5,7 @@ import struct
 from tls.handshake import *
 from tls.utils import *
 
+
 class ServerNameExtension(TLSExtension):
 
     HostName = 0
@@ -18,21 +19,21 @@ class ServerNameExtension(TLSExtension):
         if len(hostnames) == 0:
             hostnames = [hostname]
 
-        name_list = b''
+        name_list = b""
         for hostname in hostnames:
-            name = struct.pack('!BH%ds' % (len(hostname)),
-                               name_type,
-                               len(hostname),
-                               hostname.encode('utf-8'))
+            name = struct.pack(
+                "!BH%ds" % (len(hostname)),
+                name_type,
+                len(hostname),
+                hostname.encode("utf-8"),
+            )
             name_list += name
 
-
-        data = struct.pack('!HH%ds' % (len(name_list)),
-                           len(name_list) + 2,
-                           len(name_list),
-                           name_list)
-        #data = struct.pack('!HHBH%ds' % len(hostname),
+        data = struct.pack(
+            "!HH%ds" % (len(name_list)), len(name_list) + 2, len(name_list), name_list
+        )
+        # data = struct.pack('!HHBH%ds' % len(hostname),
         #                   len(hostname) + 5, name_length+3, name_type, name_length, hostname)
 
-        #hexdump(data)
+        # hexdump(data)
         return TLSExtension.create(TLSExtension.ServerName, data)

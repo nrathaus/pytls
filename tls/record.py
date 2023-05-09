@@ -6,6 +6,7 @@ import logging
 from tls.alert import *
 from tls.handshake import *
 
+
 class TLSRecord(object):
 
     # Content types
@@ -16,11 +17,11 @@ class TLSRecord(object):
     Heartbeat = 0x18
 
     content_types = {
-        0x14: 'ChangeCipherSpec',
-        0x15: 'Alert',
-        0x16: 'Handshake',
-        0x17: 'Application',
-        0x18: 'Heartbeat'
+        0x14: "ChangeCipherSpec",
+        0x15: "Alert",
+        0x16: "Handshake",
+        0x17: "Application",
+        0x18: "Heartbeat",
     }
 
     # TLS versions
@@ -31,15 +32,15 @@ class TLSRecord(object):
     TLS1_3 = 0x0304
 
     tls_versions = {
-        0x0300: 'SSL3',
-        0x0301: 'TLS1_0',
-        0x0302: 'TLS1_1',
-        0x0303: 'TLS1_2',
-        0x0304: 'TLS1_3'
+        0x0300: "SSL3",
+        0x0301: "TLS1_0",
+        0x0302: "TLS1_1",
+        0x0303: "TLS1_2",
+        0x0304: "TLS1_3",
     }
 
     def __init__(self):
-        self.bytes = ''
+        self.bytes = ""
 
     @classmethod
     def create(cls, content_type, version, message, length=-1):
@@ -50,18 +51,14 @@ class TLSRecord(object):
         if length < 0:
             length = len(message)
 
-        fmt = '!BHH%ds' % (length)
+        fmt = "!BHH%ds" % (length)
         if isinstance(message, str):
-            message = message.encode('utf-8')
-            
-        self.bytes = struct.pack(fmt,
-                                 content_type,
-                                 version,
-                                 length,
-                                 message)
+            message = message.encode("utf-8")
+
+        self.bytes = struct.pack(fmt, content_type, version, length, message)
 
         return self
-     
+
     @classmethod
     def from_bytes(cls, provided_bytes):
         self = cls()
@@ -75,22 +72,22 @@ class TLSRecord(object):
         return val
 
     def version(self):
-        version, = struct.unpack('!H', self.bytes[1:3])
+        (version,) = struct.unpack("!H", self.bytes[1:3])
         return version
 
     def message_length(self):
-        length, = struct.unpack('!H', self.bytes[3:5])
+        (length,) = struct.unpack("!H", self.bytes[3:5])
         return length
 
     def message(self):
-        return self.bytes[5:self.message_length()+5]
+        return self.bytes[5 : self.message_length() + 5]
 
     def messages(self):
-        '''
+        """
         Convenience method that returns the messages wrapped in the right type. To
         keep things consistent it always returns a list even though only handshake
         records can contain multiple messages.
-        '''
+        """
 
         if self.content_type() == self.Handshake:
             return self.handshake_messages()
@@ -104,10 +101,10 @@ class TLSRecord(object):
             return [HeartbeatMessage.from_bytes(self.message())]
         else:
             return [UnknownMessage.from_bytes(self.message())]
-        
+
     def handshake_messages(self):
         if self.content_type() != self.Handshake:
-            raise Exception('Not a Handshake record')
+            raise Exception("Not a Handshake record")
 
         messages = []
 
@@ -123,42 +120,60 @@ class TLSRecord(object):
     def __len__(self):
         return len(self.bytes)
 
+
 #
 # Utilities for processing responses
 #
 
+
 def read_tls_record(f):
-    logger = logging.getLogger('pytls')
+    logger = logging.getLogger("pytls")
 
     hdr = f.read(5)
-    if hdr == '':
-        raise IOError('Unexpected EOF receiving record header - server closed connection')
+    if hdr == "":
+        raise IOError(
+            "Unexpected EOF receiving record header - server closed connection"
+        )
 
     if len(hdr) < 5:
-        raise IOError(f'Unexpected EOF receiving record header ({len(hdr)=} - server closed connection')
+        raise IOError(
+            f"Unexpected EOF receiving record header ({len(hdr)=} - server closed connection"
+        )
 
-    typ, ver, ln = struct.unpack('>BHH', hdr)
-    logger.debug('%d\t0x%x\t%d', typ, ver, ln)
+    typ, ver, ln = struct.unpack(">BHH", hdr)
+    logger.debug("%d\t0x%x\t%d", typ, ver, ln)
 
     pay = f.read(ln)
-    if pay == '':
-        raise IOError('Unexpected EOF receiving record payload - server closed connection')
+    if pay == "":
+        raise IOError(
+            "Unexpected EOF receiving record payload - server closed connection"
+        )
 
-
-    logger.debug(' ... received message: type = %d (%s), ver = %04x, length = %d',
-                 typ, TLSRecord.content_types.get(typ, 'UNKNOWN!'), ver, len(pay))
+    logger.debug(
+        " ... received message: type = %d (%s), ver = %04x, length = %d",
+        typ,
+        TLSRecord.content_types.get(typ, "UNKNOWN!"),
+        ver,
+        len(pay),
+    )
 
     if typ == TLSRecord.Handshake:
         message_type = pay[0]
         if isinstance(message_type, bytes):
             message_type = ord(message_type)
-            
-        logger.debug('>>> Handshake message: %s', HandshakeMessage.message_types.get(message_type, 'UNKNOWN!'))
+
+        logger.debug(
+            ">>> Handshake message: %s",
+            HandshakeMessage.message_types.get(message_type, "UNKNOWN!"),
+        )
     elif typ == TLSRecord.Alert:
         message_type = pay[1]
         if isinstance(message_type, bytes):
             message_type = ord(message_type)
 
-        logger.debug('>>> Alert message: %s', AlertMessage.alert_types.get(message_type, 'UNKNOWN!'))
+        logger.debug(
+            ">>> Alert message: %s",
+            AlertMessage.alert_types.get(message_type, "UNKNOWN!"),
+        )
 
-    return TLSRecord.from_bytes(hdr+pay)
+    return TLSRecord.from_bytes(hdr + pay)

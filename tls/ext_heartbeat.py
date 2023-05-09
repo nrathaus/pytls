@@ -2,19 +2,17 @@
 
 from tls.handshake import *
 
+
 class HeartbeatMessage(object):
-    
+
     # Message types
     HeartbeatRequest = 1
     HeartbeatReponse = 2
 
-    message_types = {
-        1: 'HeartbeatRequest',
-        2: 'HeartbeatReponse'
-    }
+    message_types = {1: "HeartbeatRequest", 2: "HeartbeatReponse"}
 
     def __init__(self):
-        self.bytes = ''
+        self.bytes = ""
 
     @classmethod
     def create(cls, message_type, payload, length=-1, padding=None):
@@ -24,13 +22,15 @@ class HeartbeatMessage(object):
             length = len(payload)
 
         if padding is None:
-            padding = b'*' * 16
-            
-        self.bytes = struct.pack('!BH%ds%ds' % (len(payload), len(padding)),
-                                 message_type,
-                                 length,
-                                 payload,
-                                 padding)
+            padding = b"*" * 16
+
+        self.bytes = struct.pack(
+            "!BH%ds%ds" % (len(payload), len(padding)),
+            message_type,
+            length,
+            payload,
+            padding,
+        )
         return self
 
     @classmethod
@@ -38,7 +38,6 @@ class HeartbeatMessage(object):
         self = cls()
         self.bytes = provided_bytes
         return self
-
 
 
 class HeartbeatExtension(TLSExtension):
@@ -51,5 +50,5 @@ class HeartbeatExtension(TLSExtension):
 
     @classmethod
     def create(cls, allowed=PeerAllowedToSend):
-        data = struct.pack('!HB', 1, allowed)
+        data = struct.pack("!HB", 1, allowed)
         return TLSExtension.create(TLSExtension.Heartbeat, data)

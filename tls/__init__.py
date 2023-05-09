@@ -12,4 +12,3 @@ from tls.changecipherspec import *
 from tls.ext_heartbeat import *
 from tls.ext_statusrequest import *
 from tls.ext_servername import *
-

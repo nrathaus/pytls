@@ -1,14 +1,12 @@
-
 class ApplicationMessage(object):
-
     def __init__(self):
-        self.bytes = ''
+        self.bytes = ""
 
     def data():
         return self.bytes
 
     @classmethod
-    def create(cls, data=''):
+    def create(cls, data=""):
         self = cls()
         self.bytes = data
         return self
@@ -18,4 +16,3 @@ class ApplicationMessage(object):
         self = cls()
         self.bytes = bytes
         return self
-

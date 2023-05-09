@@ -1,17 +1,15 @@
 #!/usr/bin/python
 import struct
 
+
 class AlertMessage(object):
-    
+
     # Alert levels
     Warning = 1
     Fatal = 2
-    
-    alert_levels = {
-        1: 'Warning',
-        2: 'Fatal'
-    }
-        
+
+    alert_levels = {1: "Warning", 2: "Fatal"}
+
     # Alert types
     CloseNotify = 0
     UnexpectedMessage = 10
@@ -47,47 +45,47 @@ class AlertMessage(object):
     NoApplicationProtocol = 120
 
     alert_types = {
-        0: 'CloseNotify',
-        10: 'UnexpectedMessage',
-        20: 'BadRecordMac',
-        21: 'DecryptionFailed',
-        22: 'RecordOveflow',
-        30: 'DecompressionFailure',
-        40: 'HandshakeFailure',
-        41: 'NoCertificate',
-        42: 'BadCertificate',
-        43: 'UnsupportedCertificate',
-        44: 'CertificateRevoked',
-        45: 'CertificateExpired',
-        46: 'CertificateUnknown',
-        47: 'IllegalParameter',
-        48: 'UnknownCA',
-        49: 'AccessDenied',
-        50: 'DecodeError',
-        51: 'DecryptError',
-        60: 'ExportRestriction',
-        70: 'ProtocolVersion',
-        71: 'InsufficientSecurity',
-        80: 'InternalError',
-        86: 'InappropriateFallback',
-        90: 'UserCancelled',
-        100: 'NoRenegotiation',
-        110: 'UnsupportedExtension',
-        111: 'CertificateUnobtainable',
-        112: 'UnrecognizedName',
-        113: 'BadCertificateStatusResponse',
-        114: 'BadCertificateHashValue',
-        115: 'UnknownPSKIndentity',
-        120: 'NoApplicationProtocol'
+        0: "CloseNotify",
+        10: "UnexpectedMessage",
+        20: "BadRecordMac",
+        21: "DecryptionFailed",
+        22: "RecordOveflow",
+        30: "DecompressionFailure",
+        40: "HandshakeFailure",
+        41: "NoCertificate",
+        42: "BadCertificate",
+        43: "UnsupportedCertificate",
+        44: "CertificateRevoked",
+        45: "CertificateExpired",
+        46: "CertificateUnknown",
+        47: "IllegalParameter",
+        48: "UnknownCA",
+        49: "AccessDenied",
+        50: "DecodeError",
+        51: "DecryptError",
+        60: "ExportRestriction",
+        70: "ProtocolVersion",
+        71: "InsufficientSecurity",
+        80: "InternalError",
+        86: "InappropriateFallback",
+        90: "UserCancelled",
+        100: "NoRenegotiation",
+        110: "UnsupportedExtension",
+        111: "CertificateUnobtainable",
+        112: "UnrecognizedName",
+        113: "BadCertificateStatusResponse",
+        114: "BadCertificateHashValue",
+        115: "UnknownPSKIndentity",
+        120: "NoApplicationProtocol",
     }
 
     def __init__(self):
-        self.bytes = ''
+        self.bytes = ""
 
     @classmethod
     def create(cls, level=Fatal, type=InternalError):
         self = cls()
-        self.bytes = struct.pack('!BB', level, type)
+        self.bytes = struct.pack("!BB", level, type)
 
         return self
 
@@ -101,17 +99,20 @@ class AlertMessage(object):
         val = self.bytes[0]
         if isinstance(val, bytes):
             val = ord(val)
-            
+
         return val
 
     def alert_type(self):
         val = self.bytes[1]
         if isinstance(val, bytes):
             val = ord(val)
-            
+
         return val
 
     def __str__(self):
-        return 'Alert: %s (%d), %s (%d)' \
-            % (self.alert_levels.get(self.alert_level(), 'UNKNOWN!'), self.alert_level(),
-               self.alert_types.get(self.alert_type(), 'UNKNOWN!'), self.alert_type())
+        return "Alert: %s (%d), %s (%d)" % (
+            self.alert_levels.get(self.alert_level(), "UNKNOWN!"),
+            self.alert_level(),
+            self.alert_types.get(self.alert_type(), "UNKNOWN!"),
+            self.alert_type(),
+        )
