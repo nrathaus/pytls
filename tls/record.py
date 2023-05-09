@@ -85,6 +85,26 @@ class TLSRecord(object):
     def message(self):
         return self.bytes[5:self.message_length()+5]
 
+    def messages(self):
+        '''
+        Convenience method that returns the messages wrapped in the right type. To
+        keep things consistent it always returns a list even though only handshake
+        records can contain multiple messages.
+        '''
+
+        if self.content_type() == self.Handshake:
+            return self.handshake_messages()
+        elif self.content_type() == self.ChangeCipherSpec:
+            return [ChangeCipherSpecMessage.from_bytes(self.message())]
+        elif self.content_type() == self.Alert:
+            return [AlertMessage.from_bytes(self.message())]
+        elif self.content_type() == self.Application:
+            return [ApplicationMessage.from_bytes(self.message())]
+        elif self.content_type() == self.Heartbeat:
+            return [HeartbeatMessage.from_bytes(self.message())]
+        else:
+            return [UnknownMessage.from_bytes(self.message())]
+        
     def handshake_messages(self):
         if self.content_type() != self.Handshake:
             raise Exception('Not a Handshake record')

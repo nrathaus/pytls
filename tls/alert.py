@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import struct
 
 class AlertMessage(object):
     
@@ -82,6 +83,13 @@ class AlertMessage(object):
 
     def __init__(self):
         self.bytes = ''
+
+    @classmethod
+    def create(cls, level=Fatal, type=InternalError):
+        self = cls()
+        self.bytes = struct.pack('!BB', level, type)
+
+        return self
 
     @classmethod
     def from_bytes(cls, provided_bytes):
